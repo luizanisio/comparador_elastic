@@ -5,6 +5,8 @@ Criando um comparador e um sumarizador de textos usando a base do elasticsearch 
 Existem diversas formas de comparar um texto. Navegando pela web achei alguns algoritmos mas eu queria poder incluir similaridade textual, shingles (grupos de tokens) e comparar apenas termos mais relevantes dos textos. Percebi que grande parte do esforço para isso já é feito de forma muito eficiente pelo elasticsearch. Então segui os seguintes passos:
 
 ### 1. criar um índice no elasticsearch com um campo com stemmer removendo stopwords, um com shingles removendo stopwords e usando stemmer, e um com shingles apenas. Cada campo é um analisador diferente, permitindo uma comparação diferente.
+
+- segue arquivo stop_br.txt com alguns stops simples.
 ```json
 PUT /comparador/
 {    "analysis": {
@@ -21,7 +23,7 @@ PUT /comparador/
        },
        "shingle_br":{
          "tokenizer":"standard",
-         "filter":["standard","asciifolding", "lowercase","stop_br" , "stemmer_br","filtro_shingle"]
+         "filter":["standard","asciifolding", "lowercase" , "stop_br", "stemmer_br","filtro_shingle"]
        },
        "shingle_raw":{
          "tokenizer":"standard",
