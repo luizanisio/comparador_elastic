@@ -9,6 +9,7 @@ Existem diversas formas de comparar um texto. Navegando pela web achei alguns al
 PUT /comparador/
 {    "analysis": {
      "filter": {
+       "stop_br": {"type": "stop","stopwords_path": "stop_br.txt" },
        "stemmer_br": {"type": "stemmer", "language":   "brazilian" },
        "filtro_shingle":{ "type":"shingle", "max_shingle_size":3,
                           "min_shingle_size":2, "output_unigrams":"true"}
@@ -16,11 +17,11 @@ PUT /comparador/
      "analyzer": {
        "texto_br": {
          "tokenizer":  "standard",
-         "filter": ["lowercase","asciifolding","stemmer_br"]
+         "filter": ["lowercase","asciifolding","stop_br","stemmer_br"]
        },
        "shingle_br":{
          "tokenizer":"standard",
-         "filter":["standard","asciifolding", "lowercase", "stemmer_br","filtro_shingle"]
+         "filter":["standard","asciifolding", "lowercase","stop_br" , "stemmer_br","filtro_shingle"]
        },
        "shingle_raw":{
          "tokenizer":"standard",
