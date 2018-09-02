@@ -2,7 +2,7 @@
 Criando um comparador e um sumarizador de textos usando a base do elasticsearch como mapa de termos relevantes
 
 ## Comparando textos
-Existem diversas formas de comparar um texto. Navegando pela web achei alguns algoritmos mas eu queria poder incluir similaridade textual, shingles (grupos de tokens) e comparar apenas termos mais relevantes dos textos. O sklearn permite fazer isso em poucas linhas (como no exemplo abaixo). Mas eu ainda queria um pouco mais. Queria a facilidade de manter um corpus atualizado dinamicamente e poder comparar textos usando os pesos desse corpus. Percebi que grande parte do esforço para isso já é feito de forma muito eficiente pelo elasticsearch. Então segui os passos abaixo:
+Existem diversas formas de comparar um texto. Navegando pela web achei alguns algoritmos mas eu queria poder incluir similaridade textual, shingles (grupos de tokens) e comparar apenas termos mais relevantes dos textos. O sklearn permite fazer isso em poucas linhas (como no exemplo abaixo). Mas eu ainda queria um pouco mais. Queria a facilidade de manter um corpus atualizado dinamicamente e poder comparar textos usando os pesos desse corpus. Percebi que grande parte do esforço para isso já é feito de forma muito eficiente pelo elasticsearch. 
 
 ### Exemplo de comparação simples e eficaz usando o sklearn
 Com esse exemplo, pode-se comparar documentos facilmente. O único problema é que o corpus é o próprio conjunto de documentos.
@@ -33,6 +33,9 @@ Teremos algo assim como resposta:
      0.9411973662740533      1.0000000000000004      0.10227717325469488
      0.09892304334458238     0.10227717325469488     1.0
 ```
+
+## Como eu quero complicar um pouco, mas não muito, vamos ao elastic
+- Em resumo, vou buscar para cada documento os termos e pesos deles no corpus de documentos do elastic (de acordo com as regras dos analisadores criados). Vou criar a matriz <b>csr_matrix</b> e calcular a similaridade pelo cosseno.
 
 ### 1. criar um índice no elasticsearch com um campo com stemmer removendo stopwords, um com shingles removendo stopwords e usando stemmer, e um com shingles apenas. Cada campo é um analisador diferente, permitindo uma comparação diferente.
 
@@ -151,7 +154,7 @@ O retorno do exemplo acima será a lista de tokens do documento, de acordo com o
 ### 4. calcular a distância do cosseno dos termos mais relevantes e seus pesos para os dois documentos. Daí temos um cálculo rápido e razoável de similaridade.
 - com os vetores de termos e pesos de cada documento, basta calcular a distância entre os documentos 
 ```py
- similaridade = SIMILARIDADE.cosine_similarity(vector1, vector2)
+ cossenos = cosine_similarity(matriz_csr)
 ```
 
 # Disponibilizarei os códigos python em breve, bem como um exemplo de como usar esse mesmo algoritmo para sumarizar um texto encontrando as sentenças relevantes dele.
