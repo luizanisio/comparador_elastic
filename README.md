@@ -2,7 +2,37 @@
 Criando um comparador e um sumarizador de textos usando a base do elasticsearch como mapa de termos relevantes
 
 ## Comparando textos
-Existem diversas formas de comparar um texto. Navegando pela web achei alguns algoritmos mas eu queria poder incluir similaridade textual, shingles (grupos de tokens) e comparar apenas termos mais relevantes dos textos. Percebi que grande parte do esforço para isso já é feito de forma muito eficiente pelo elasticsearch. Então segui os seguintes passos:
+Existem diversas formas de comparar um texto. Navegando pela web achei alguns algoritmos mas eu queria poder incluir similaridade textual, shingles (grupos de tokens) e comparar apenas termos mais relevantes dos textos. O sklearn permite fazer isso em poucas linhas (como no exemplo abaixo). Mas eu ainda queria um pouco mais. Queria a facilidade de manter um corpus atualizado dinamicamente e poder comparar textos usando os pesos desse corpus. Percebi que grande parte do esforço para isso já é feito de forma muito eficiente pelo elasticsearch. Então segui os passos abaixo:
+
+### Exemplo de comparação simples e eficaz usando o sklearn
+Com esse exemplo, pode-se comparar documentos facilmente. O único problema é que o corpus é o próprio conjunto de documentos.
+- UTIL_MATRIZ.print_console é apenas um método para imprimir no console uma matriz com os espaçamentos corretos.
+- a documentação do TfidfVectorizer é bem clara, e pode ser acessada aqui: http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
+
+```py
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from nltk.corpus import stopwords
+STOP_BR = stopwords.words('portuguese')
+
+text1 = 'Teste do teste do teste'
+text2 = 'Teste do teste do teste Teste do teste do teste Teste do teste do teste Teste do teste do teste da blá'
+text3 = 'Esse teste não é nunhum blá blá blá'
+textos=[text1,text2,text3]
+corpus = ' '.join(textos)
+
+tf = TfidfVectorizer(analyzer='word', ngram_range=(1,3), strip_accents='ascii', stop_words=set(STOP_BR))
+matriz_tfidf =  tf.fit_transform(textos,corpus)
+cossenos = cosine_similarity(matriz_tfidf)
+UTIL_MATRIZ.print_console('Cossenos:',cossenos)
+```
+Teremos algo assim como resposta:
+```bat
+     Cossenos:
+     1.0                     0.9411973662740533      0.09892304334458238
+     0.9411973662740533      1.0000000000000004      0.10227717325469488
+     0.09892304334458238     0.10227717325469488     1.0
+```
 
 ### 1. criar um índice no elasticsearch com um campo com stemmer removendo stopwords, um com shingles removendo stopwords e usando stemmer, e um com shingles apenas. Cada campo é um analisador diferente, permitindo uma comparação diferente.
 
