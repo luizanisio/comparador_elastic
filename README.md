@@ -2,7 +2,7 @@
 Criando um comparador e um sumarizador de textos usando a base do elasticsearch como mapa de termos relevantes
 
 ## Comparando textos
-Existem diversas formas de comparar um texto. Navegando pela web achei alguns algoritmos interessantes, mas eu queria poder incluir similaridade textual, shingles (grupos de tokens) e comparar apenas termos mais relevantes dos textos atualizando facilmente o <b>corpus<b> de documentos. O <b>sklearn</b> permite fazer isso em poucas linhas (como no exemplo abaixo). Mas eu ainda queria um pouco mais. Queria a facilidade de manter um corpus atualizado dinamicamente e poder comparar textos usando os pesos desse corpus. Percebi que grande parte do esforço para isso já é feito de forma muito eficiente pelo elasticsearch. 
+Existem diversas formas de comparar um texto. Navegando pela web achei alguns algoritmos interessantes, mas eu queria poder incluir similaridade textual, shingles (grupos de tokens) e comparar apenas termos mais relevantes dos textos atualizando facilmente o <b>corpus</b> de documentos. O <b>sklearn</b> permite fazer isso em poucas linhas (como no exemplo abaixo). Mas eu ainda queria um pouco mais. Queria a facilidade de manter um corpus atualizado dinamicamente e poder comparar textos usando os pesos desse corpus. Percebi que grande parte do esforço para isso já é feito de forma muito eficiente pelo elasticsearch. 
 
 ### Exemplo de comparação simples e eficaz usando o sklearn
 - a documentação do TfidfVectorizer é bem clara, e pode ser acessada aqui: http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
