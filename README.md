@@ -2,12 +2,12 @@
 Criando um comparador e um sumarizador de textos usando a base do elasticsearch como mapa de termos relevantes
 
 ## Comparando textos
-Existem diversas formas de comparar um texto. Navegando pela web achei alguns algoritmos mas eu queria poder incluir similaridade textual, shingles (grupos de tokens) e comparar apenas termos mais relevantes dos textos. O sklearn permite fazer isso em poucas linhas (como no exemplo abaixo). Mas eu ainda queria um pouco mais. Queria a facilidade de manter um corpus atualizado dinamicamente e poder comparar textos usando os pesos desse corpus. Percebi que grande parte do esforço para isso já é feito de forma muito eficiente pelo elasticsearch. 
+Existem diversas formas de comparar um texto. Navegando pela web achei alguns algoritmos interessantes, mas eu queria poder incluir similaridade textual, shingles (grupos de tokens) e comparar apenas termos mais relevantes dos textos atualizando facilmente o <b>corpus<b> de documentos. O <b>sklearn</b> permite fazer isso em poucas linhas (como no exemplo abaixo). Mas eu ainda queria um pouco mais. Queria a facilidade de manter um corpus atualizado dinamicamente e poder comparar textos usando os pesos desse corpus. Percebi que grande parte do esforço para isso já é feito de forma muito eficiente pelo elasticsearch. 
 
 ### Exemplo de comparação simples e eficaz usando o sklearn
-Com esse exemplo, pode-se comparar documentos facilmente. O único problema é que o corpus é o próprio conjunto de documentos.
-- UTIL_MATRIZ.print_console é apenas um método para imprimir no console uma matriz com os espaçamentos corretos.
+Com esse exemplo, pode-se comparar documentos facilmente. 
 - a documentação do TfidfVectorizer é bem clara, e pode ser acessada aqui: http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
+- mais abaixo tem uma matriz de similaridade feita com o sklearn e uma feita com o elastic
 
 ```py
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -35,7 +35,7 @@ Teremos algo assim como resposta:
 ```
 
 ## Como eu quero complicar um pouco, mas não muito, vamos ao elastic
-- Em resumo, vou buscar para cada documento os termos e pesos deles no corpus de documentos do elastic (de acordo com as regras dos analisadores criados). Vou criar a matriz <b>csr_matrix</b> e calcular a similaridade pelo cosseno.
+- Em resumo, vou buscar para cada documento os termos e pesos deles no corpus de documentos do elastic (de acordo com as regras dos analisadores criados, stemmer, stop words, sinônimos etc). Vou criar a matriz <b>csr_matrix</b> e calcular a similaridade pelo cosseno usando o <b>sklearn</b>.
 
 ### 1. criar um índice no elasticsearch com um campo com stemmer removendo stopwords, um com shingles removendo stopwords e usando stemmer, e um com shingles apenas. Cada campo é um analisador diferente, permitindo uma comparação diferente.
 
@@ -92,7 +92,7 @@ PUT /comparador/_mapping/textos/
 ´´´
 
 ### 3. fazer uma requisição ao elastic solicitando que retorne os termos importantes de um documento de acordo com o analyzer de um campo.
-- O elastic permite simular um documento sem incluí-lo, retornando os termos que seriam retornados caso o documento existisse na base. Com isso, podemos usar a base como <i>corpus</i> de documentos. Podemos retornar os termos do documento (como um tokenizador usando o analyser do campo) e podemos também retornar os termos relevantes de um conjunto de documentos, bem como os seus pesos de acordo com os documentos do <i>corpus</i> da base (já calculados o TFIDF ou BM25). 
+- O elastic permite simular um documento sem incluí-lo, retornando os termos/tokens que seriam retornados caso o documento existisse na base. Com isso, podemos usar a base como <i>corpus</i> de documentos. Podemos retornar os termos do documento (como um tokenizador usando o analyser do campo) e podemos também retornar os termos relevantes de um conjunto de documentos, bem como os seus pesos de acordo com os documentos do <i>corpus</i> da base (já calculados o TFIDF ou BM25). 
 - dos tokens, geramos um contador de tokens (quantas vezes cada token aparece em cada documento)
 - dos pesos, geramos um multiplicador de pesos e multiplicamos o peso de cada termos pelo contador de termos de cada documento
 - daí temos o peso de cada termo em cada documento de acordo com o peso de cada termo na base, algo como {"casa" : 12.76355, "carro" : 13.7665} ...
@@ -157,4 +157,5 @@ O retorno do exemplo acima será a lista de tokens do documento, de acordo com o
  cossenos = cosine_similarity(matriz_csr)
 ```
 
-# Disponibilizarei os códigos python em breve, bem como um exemplo de como usar esse mesmo algoritmo para sumarizar um texto encontrando as sentenças relevantes dele.
+- Usando alguns textos de exemplo, podemos ter a matriz de similaridade entre os documentos conforme o exemplo abaixo.
+
