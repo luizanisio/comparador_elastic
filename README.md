@@ -5,9 +5,11 @@ Criando um comparador e um sumarizador de textos usando a base do elasticsearch 
 Existem diversas formas de comparar um texto. Navegando pela web achei alguns algoritmos interessantes, mas eu queria poder incluir similaridade textual, shingles (grupos de tokens) e comparar apenas termos mais relevantes dos textos atualizando facilmente o <b>corpus<b> de documentos. O <b>sklearn</b> permite fazer isso em poucas linhas (como no exemplo abaixo). Mas eu ainda queria um pouco mais. Queria a facilidade de manter um corpus atualizado dinamicamente e poder comparar textos usando os pesos desse corpus. Percebi que grande parte do esforço para isso já é feito de forma muito eficiente pelo elasticsearch. 
 
 ### Exemplo de comparação simples e eficaz usando o sklearn
-Com esse exemplo, pode-se comparar documentos facilmente. 
 - a documentação do TfidfVectorizer é bem clara, e pode ser acessada aqui: http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
+- Esse link me ajudou muito no entendimento e uso do <b>TfidfVectorizer</b>, além da documentação: https://markhneedham.com/blog/2016/07/27/scitkit-learn-tfidf-and-cosine-similarity-for-computer-science-papers/ 
 - mais abaixo tem uma matriz de similaridade feita com o sklearn e uma feita com o elastic
+
+#### Com esse exemplo, pode-se comparar documentos facilmente. 
 
 ```py
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -162,4 +164,43 @@ O retorno do exemplo acima será a lista de tokens do documento, de acordo com o
 
 - A mesma lista de documentos comparados usando o código do sklearn no ínicio do texto.
 ![Exemplo de matriz com o uso do sklearn](/imagens/comp_sklearn.png)
+
+### 5. O código de exemplo.
+- Alimentando o índice do elastic com todos os textos de uma pasta. Crie antes os analisadores e o índice conforme descrito acima.
+
+```py
+    elastic = ELASTIC('http://localhost:9200', 'comparador', 'textos')
+    alimentar_comparador(pasta='.\\textos_corpus\\',objElastic=elastic)
+```
+
+- Comparando todos os textos de uma pasta usando a classe exemplo do elastic.
+
+```py
+    cos_es = UTIL_SIMILARIDADE.documentos_matriz_elastic(pasta=pasta, campo_elastic='Texto_Shingle_RAW', objElastic=elastic)
+    if cos_es is not None:
+       UTIL_MATRIZ.gravar(arquivo='similaridade_es.txt', matriz=cos_es)
+```
+
+- Comparando todos os textos de uma pasta usando a classe exemplo do sklearn.
+
+```py
+    cos_sk = UTIL_SIMILARIDADE.documentos_matriz(pasta=pasta)
+    if cos_sk is not None:
+       UTIL_MATRIZ.gravar(arquivo='similaridade_sk.txt', matriz=cos_sk)
+```
+
+- A classe ELASTIC é simples e permite fazer o CRUD e usos diversos do elasticsearch.
+- A classe UTIL_SIMILARIDADE contém métodos de comparação entre documentos de uma pasta e entre dois documentos.
+- Outras classes acessórias estão disponíveis para que o projeto funcione.
+- Pode-se obter a similaridade entre dois documentos com ou sem o elastic conforme o exemplo abaixo (disponível no arquivo "classes_similaridade.py"):
+
+```py
+    print('\nComparando dois textos com o sklearn: ', UTIL_SIMILARIDADE.compara(texto1=parecido, texto2=original))
+
+    print('\nComparando dois textos com o elastic: ',
+          UTIL_SIMILARIDADE.compara_elastic(texto1=parecido, texto2=original,
+                                            campo_elastic='Texto_Shingle', objElastic=elastic))
+```
+
+
 
