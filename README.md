@@ -158,4 +158,8 @@ O retorno do exemplo acima será a lista de tokens do documento, de acordo com o
 ```
 
 - Usando alguns textos de exemplo, podemos ter a matriz de similaridade entre os documentos conforme o exemplo abaixo.
+![Exemplo de matriz com o uso do elastic](/imagens/comp_elastic.png)
+
+- A mesma lista de documentos comparados usando o código do sklearn no ínicio do texto.
+![Exemplo de matriz com o uso do sklearn](/imagens/comp_sklearn.png)
 
