@@ -165,6 +165,8 @@ O retorno do exemplo acima será a lista de tokens do documento, de acordo com o
 - A mesma lista de documentos comparados usando o código do sklearn no ínicio do texto.
 ![Exemplo de matriz com o uso do sklearn](/imagens/comp_sklearn.png)
 
+- Nos exemplos eu incluí um texto em inglês, para que fosse totalmente diferente de qualquer outro texto (<b>z_controle_en.txt</b>), e um texto em português com assunto diferente dos outros textos (<b>z_controle_pt.txt</b>).
+
 ### 5. O código de exemplo.
 - Alimentando o índice do elastic com todos os textos de uma pasta. Crie antes os analisadores e o índice conforme descrito acima.
 
