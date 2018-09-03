@@ -1,0 +1,7 @@
+With forfiles, you can run a command on or pass arguments to multiple files. For example, you could run the type command on all files in a tree with the .txt file name extension. Or you could execute every batch file (*.bat) on drive C, with the file name "Myinput.txt" as the first argument.
+With forfiles, you can do any of the following:
+Select files by an absolute date or a relative date by using the /d parameter.
+Build an archive tree of files by using variables such as @FSIZE and @FDATE.
+Differentiate files from directories by using the @ISDIR variable.
+Include special characters in the command line by using the hexadecimal code for the character, in 0xHH format (for example, 0x09 for a tab).
+Forfiles works by implementing the recurse subdirectories flag on tools that are designed to process only a single file.
