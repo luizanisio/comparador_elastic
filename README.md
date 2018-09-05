@@ -204,5 +204,47 @@ O retorno do exemplo acima será a lista de tokens do documento, de acordo com o
                                             campo_elastic='Texto_Shingle', objElastic=elastic))
 ```
 
+## Resumindo textos: resumo por extração
+Encontrei vários códigos e exemplos de como resumir um texto. Verifiquei que o mais complicado não é a técnica de resumo, mas a divisão do texto em sentenças para que estas possam ser <i>rankeadas</i> e com isso possamos selecionar as mais importantes para o documento. Em relação ao score das sentenças, o trabalho já foi feito na parte de comparação. Calculando os termos mais relevantes de cada sentença como se fossem documentos, onde o documento é o <b>corpus</b>. Como já temos duas formas de calcular o score de um documento, e agora podemos usar para calcular o score das sentenças, também temos duas formas de resumir. Uma usando o sklearn para identificar o score das sentenças, e outra usando o elasticsearch. 
 
+- tipos de resumos automáticos: https://en.wikipedia.org/wiki/Automatic_summarization
 
+### Exemplo de como criar um resumo usando o sklearn e o elasticsearch
+
+- Calculando os scores: o código de exemplo usa a matriz csr para calcular o score de cada sentença, somando o peso dos termos para cada uma e ordenando as sentenças de forma decrescente pelos seus scores.
+- Com isso é só decidir quantas sentenças queremos retornar, e retorná-las na ordem natural do texto. No exemplo temos a opção de definir um número mínimo de sentenças e um número mínimo do percentual de scores do texto. Quando os dois mínimos forem atingidos, o resumo é concluído.
+- O arquivo "resumir.txt" é uma cópia do texto sobre Platão da wikipedia, e é usado para o resumo exemplo, que é feito buscando no mínimo 1% do texto, com no mínimo 2 sentenças.
+```py
+    texto = UTIL_ARQUIVOS.carregar_string_arquivo('.\\textos_corpus\\resumir.txt')
+
+    print('== RESUMO SKLEARN')
+    print(UTIL_SIMILARIDADE.resumo_textos(texto_ou_textos=texto, min_sentencas=2, min_percentual=1))
+
+    print('== RESUMO ELASTIC')
+    print(UTIL_SIMILARIDADE.resumo_textos(texto_ou_textos=texto, min_sentencas=2, min_percentual=1,
+                                          objElastic=elastic, campo_elastic='Texto_Shingle'))
+```
+- Os resultados estão abaixo. Interessante que nesse caso os dois resumos ficaram iguais. O que vai alterar os pesos de cada um é o peso dos termos colocados no elasticsearch, já que o sklearn está usando como corpus apenas o próprio documento. O valor dos scores não é importante, o elastic e o sklearn calculam de forma diferente. No algoritmo usado, foi incluído um peso extra para sentenças completamente em maiúsculo, mas isso pode ser alterado no parâmetro da chamada do método <b>resumo_textos</b>.
+```bat
+== RESUMO SKLEARN
+Percentual:  1.9664313580305095 Sentenças:  2 Total scores:  1127.0736074334588
+A mais famosa fonte da história do resgate de Platão por Arquitas está na Sétima Carta, onde Platão descreve seu envolvimento nos incidentes de seu amigo Dion de Siracusa e Dionísio I, o tirano de Siracusa, Platão esperava influenciar o tirano sobre o ideal do rei-filósofo (exposto em Górgias, anterior à sua viagem), mas logo entrou em conflito com o tirano e sua corte; mas mesmo assim cultivou grande amizade com Díon, parente do tirano, a quem pensou que este pudesse ser um discípulo capaz de se tornar um rei-filósofo.  Diógenes Laércio conta que ele "foi a Cirene, juntar-se a Teodoro, o matemático, depois à Itália, com os pitagóricos Filolau e Eurito; e daí para o Egito, avistar-se com os profetas; ele tinha decidido encontrar-se também com os magos, mas a guerras da Ásia o fizeram renunciar a isso" Apesar desse relato de Diógenes Laércio, é posto em dúvida se Platão foi mesmo ao Egito, pois há evidências de que a estadia foi inventada no Egito, para aproximar Platão à tradição de sabedoria egípcia.
+== RESUMO ELASTIC
+Percentual:  3.904509364856055 Sentenças:  2 Total scores:  11529.746356458076
+A mais famosa fonte da história do resgate de Platão por Arquitas está na Sétima Carta, onde Platão descreve seu envolvimento nos incidentes de seu amigo Dion de Siracusa e Dionísio I, o tirano de Siracusa, Platão esperava influenciar o tirano sobre o ideal do rei-filósofo (exposto em Górgias, anterior à sua viagem), mas logo entrou em conflito com o tirano e sua corte; mas mesmo assim cultivou grande amizade com Díon, parente do tirano, a quem pensou que este pudesse ser um discípulo capaz de se tornar um rei-filósofo.  Diógenes Laércio conta que ele "foi a Cirene, juntar-se a Teodoro, o matemático, depois à Itália, com os pitagóricos Filolau e Eurito; e daí para o Egito, avistar-se com os profetas; ele tinha decidido encontrar-se também com os magos, mas a guerras da Ásia o fizeram renunciar a isso" Apesar desse relato de Diógenes Laércio, é posto em dúvida se Platão foi mesmo ao Egito, pois há evidências de que a estadia foi inventada no Egito, para aproximar Platão à tradição de sabedoria egípcia.
+```
+- Pode-se também listar o score das sentenças, onde cada item do array corresponde à (posição da sentença no texto, score, texto):
+```py
+    print('== SCORES SKLEARN')
+    [print(s) for s in UTIL_SIMILARIDADE.scores_textos(texto_ou_textos=texto, peso_so_maiusculas=2)]
+```
+- Como resultado temos (coloquei apenas as primeiras linhas):
+```bat
+(50, 11.445386362363422, 'A mais famosa fonte da história do resgate de Platão por Arquitas está na Sétima Carta, onde Platão descreve seu envolvimento nos incidentes de seu amigo Dion de Siracusa e Dionísio I, o tirano de Siracusa, Platão esperava influenciar o tirano sobre o ideal do rei-filósofo (exposto em Górgias, anterior à sua viagem), mas logo entrou em conflito com o tirano e sua corte; mas mesmo assim cultivou grande amizade com Díon, parente do tirano, a quem pensou que este pudesse ser um discípulo capaz de se tornar um rei-filósofo. ')
+(46, 10.717742482293794, 'Diógenes Laércio conta que ele "foi a Cirene, juntar-se a Teodoro, o matemático, depois à Itália, com os pitagóricos Filolau e Eurito; e daí para o Egito, avistar-se com os profetas; ele tinha decidido encontrar-se também com os magos, mas a guerras da Ásia o fizeram renunciar a isso" Apesar desse relato de Diógenes Laércio, é posto em dúvida se Platão foi mesmo ao Egito, pois há evidências de que a estadia foi inventada no Egito, para aproximar Platão à tradição de sabedoria egípcia. ')
+(228, 10.022613240910918, 'Já para o filólogo alemão Ulrich von Wilamowitz-Moellendorff, Platão teria nascido quando Diótimos era arconte epônimo, mais especificamente entre 29 de julho de 428 a. C. e 24 de julho de 427 a. C. O filólogo grego acredita que o filósofo teria nascido em 26 ou 27 de maio de 427 a. C. , enquanto o filósofo britânico Jonathan Barnes estipula 428 a. C. como o ano de nascimento de Platão. ')
+(94, 9.843437827272652, 'Segundo Diógenes Laércio(III, 61), se encontravam na nona tetralogia "uma carta a Aristodemo [de fato a Aristodoro]" (X), duas a Arquitas (IX, XII), quatro a Dionísio II (I, II, III, IV), uma a Hérmias, Erastos e Coriscos (VI), uma a Leodamas (XI), uma a Dion (IV), uma a Perdicas (V) e duas aos parentes de Dion (VII, VIII)". ')
+(42, 9.74490045086472, 'Mas, a situação política após a restauração da democracia ateniense em 403 também o desagradou, sendo um ponto de viragem na vida de Platão, a execução de Sócrates em 399 a. C, que o abalou profundamente, levando-o a avaliiar a ação do Estado contra seu professor, como uma expressão de depravação moral e evidência de um defeito fundamental no sistema político. ')
+(200, 9.70703193005209, 'Acredita-se que Pletão passou uma cópia dos diálogos platônicos para Cosme de Médici em 1438/39 durante o Conselho de Ferrara, quando foi chamado para unificar as Igrejas grega e latina e então foi transferido para Florença onde fez uma palestra sobre a relação e as diferenças de Platão e Aristóteles; assim, Pletão teria influenciado Cosme com seu entusiasmo. ')
+(137, 9.41945973331433, '. . Platão foi certamente o representante máximo desse gênero literário, superior a todos os outros e, mesmo, o único representante, pois apenas em seus escritos é que se pode reconhecer a natureza autêntica do filosofar socrático, que nos outros escritores, degenerou em maneirismos; sendo assim, o diálogo, em Platão, é mais do que um gênero literário: é sua forma de fazer filosofia. ')
+```
