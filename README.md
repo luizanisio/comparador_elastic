@@ -19,7 +19,7 @@ STOP_BR = stopwords.words('portuguese')
 
 text1 = 'Teste do teste do teste'
 text2 = 'Teste do teste do teste Teste do teste do teste Teste do teste do teste Teste do teste do teste da blá'
-text3 = 'Esse teste não é nunhum blá blá blá'
+text3 = 'Esse teste não é nenhum blá blá blá'
 textos=[text1,text2,text3]
 corpus = ' '.join(textos)
 
