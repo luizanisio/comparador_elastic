@@ -248,3 +248,19 @@ A mais famosa fonte da história do resgate de Platão por Arquitas está na Sé
 (200, 9.70703193005209, 'Acredita-se que Pletão passou uma cópia dos diálogos platônicos para Cosme de Médici em 1438/39 durante o Conselho de Ferrara, quando foi chamado para unificar as Igrejas grega e latina e então foi transferido para Florença onde fez uma palestra sobre a relação e as diferenças de Platão e Aristóteles; assim, Pletão teria influenciado Cosme com seu entusiasmo. ')
 (137, 9.41945973331433, '. . Platão foi certamente o representante máximo desse gênero literário, superior a todos os outros e, mesmo, o único representante, pois apenas em seus escritos é que se pode reconhecer a natureza autêntica do filosofar socrático, que nos outros escritores, degenerou em maneirismos; sendo assim, o diálogo, em Platão, é mais do que um gênero literário: é sua forma de fazer filosofia. ')
 ```
+- A divisão do texto em sentenças é feita pelo código abaixo, uma mistura de alguns códigos exemplos que encontrei por aí, adaptando ao português. Não é perfeito, mas está razoável. A base principal desse código veio daqui: baseado em https://stackoverflow.com/questions/25735644/python-regex-for-splitting-text-into-sentences-sentence-tokenizing
+
+- O método de resumo pode receber um array de textos, daí ele entende que não precisa dividir em sentenças. Isso é interessante caso o texto já esteja dividido em sentenças, diminuindo o erro. Em geral o que dificulta a divisão do texto são as abreviações 
+```py
+    print('== SENTENÇAS')
+    texto='Esse texto tem 3 sentenças da Sr(a). e Dra. Maria e o Sr. João é uma. A outra com o art. 333 é a segunda. E por fim, temos fls. 5 a terceira.'
+    [print(s) for s in UTIL_TEXTOS.sentencas(texto)]
+```
+- O resultado fica assim:
+```
+ == SENTENÇAS
+ Esse texto tem 3 sentenças da Sr(a). e Dra. Maria e o Sr. João é uma.
+ A outra com o art. 333 é a segunda.
+ E por fim, temos fls. 5 a terceira.
+```
+- Nem todos os falso-positivos de sentenças estão resolvidos, mas é um começo.
