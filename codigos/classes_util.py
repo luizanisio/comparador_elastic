@@ -50,7 +50,7 @@ class UTIL_ARQUIVOS(object):
     @staticmethod
     def carregar_nomes_e_textos(pasta='.\\', nm_reduzido=True):
         arqs = [f for f in glob.glob(r"{}*.txt".format(pasta))]
-        #print('Arquivos das pastas', pasta, arqs)
+        # print('Arquivos das pastas', pasta, arqs)
         nms = ['' for _ in range(len(arqs))]
         txts = ['' for _ in range(len(arqs))]
 
@@ -177,8 +177,16 @@ class UTIL(object):
         pool.map(func, lista)
         pool.close()
         pool.join()
-        # print('Finalizando {} threads'.format(n_threads))
 
+
+ABREVIACOES = ['sra?s?', 'exm[ao]s?', 'ns?', 'nos?', 'doc', 'ac', 'publ', 'ex', 'lv', 'vlr?', 'vls?',
+               'exmo(a)', 'ilmo(a)', 'av', 'of', 'min', 'livr?', 'co?ls?', 'univ', 'resp', 'cli', 'lb',
+               'dra?s?', '[a-z]+r\(as?\)', 'ed', 'pa?g', 'cod', 'prof', 'op', 'plan', 'edf?', 'func', 'ch',
+               'arts?', 'artigs?', 'artg', 'pars?', 'rel', 'tel', 'res', '[a-z]', 'vls?', 'gab', 'bel',
+               'ilm[oa]', 'parc', 'proc', 'adv', 'vols?', 'cels?', 'pp', 'ex[ao]', 'eg', 'pl', 'ref',
+               '[0-9]+', 'reg', 'f[ilí]s?', 'inc', 'par', 'alin', 'fts', 'publ?', 'ex', 'v. em', 'v.rev']
+
+ABREVIACOES_RGX = re.compile(r'(?:{})\.\s*$'.format('|\s'.join(ABREVIACOES)), re.IGNORECASE)
 
 class UTIL_TEXTOS(object):
     @staticmethod
@@ -210,7 +218,99 @@ class UTIL_TEXTOS(object):
             txt = re.sub(r"[{}]".format(de), para, txt)
         return txt
 
+    @staticmethod
+    def sentencas(texto, min_len=5):
+        # baseado em https://stackoverflow.com/questions/25735644/python-regex-for-splitting-text-into-sentences-sentence-tokenizing
+        texto = re.sub(r'\s\s+', ' ', texto)
+        EndPunctuation = re.compile(r'([\.\?\!]\s+)')
+        # print(NonEndings)
+        parts = EndPunctuation.split(texto)
+        sentencas = []
+        sentence = []
+        for part in parts:
+            txt_sent = ''.join(sentence)
+            q_len = len(txt_sent)
+            if len(part) and len(sentence) and q_len >= min_len and \
+                    EndPunctuation.match(sentence[-1]) and \
+                    not ABREVIACOES_RGX.search(txt_sent):
+                sentencas.append(txt_sent)
+                sentence = []
+
+            if len(part):
+                sentence.append(part)
+        if sentence:
+            sentencas.append(''.join(sentence))
+        return sentencas
+
+    @staticmethod
+    def possiveis_abreviacoes(texto, min_len=4):
+        NAO_ABREVIACOES = ['mais', 'cit', 'stf', 'quo', 'mm', 'voto', 'cpc', 'etc', 'sede', 'df', 'caso', 'tse', 'casu',
+                           'data', 'ale', 'irt', 'xi', 'li', 'oro', 'des', 'ih', 'lvi', 'ii', 'neto', 'sk', 'sark',
+                           'ou', 'disp', 'def', 'come', 'taf', 'dc', 'on', 'licc', 'leis', 'ai', 'pois', 'edif', 'ft',
+                           'cpis', 'trf', 'aer', 'mar', 'to', 'cj', 'real', 'vi', 'in', 'limo', 'pis', 'xii', 'tes',
+                           'tema', 'de', 'ctn', 'rt', 'como', 'doe', 'oct', 'olk', 'las', 'cd', 'ltda', 'voor', 'oot',
+                           'que', 'nal', 'el', 'um', 'gg', 'erro', 'desa', 'rte', 'iv', 'ipc', 'mini', 'ari', 'uy',
+                           'la', 'lide', 'atos', 'wnt', 'vs', 'julg', 'base', 'wn', 'ir', 'nyy', 'low', 'rs', 'jr',
+                           'is', 'rei', 'dipp', 'fed', 'eles', 'rec', 'pgr', 'crt', 'lf', 'tt', 'nr', 'em', 'jogo',
+                           'dano', 'do', 'grau', 'cpmf', 'pr', 'col', 'tri', 'bem', 'todo', 'fta', 'lxix', 'dias',
+                           'suai', 'ct', 'fe', 'tal', 'az', 'ni', 'fr', 'writ', 'urv', 'adct', 'il', 'vokl', 'ag',
+                           'tela', 'ick', 'iii', 'dra', 'ano', 'it', 'dj', 'stj', 'ila', 'lima', 're', 'sa', 'cc',
+                           'bela', 'jj', 'tipo', 'ta', 'fla', 'ri', 'tx', 'rosa', 'hoje', 'nem', 'bl', 'mora', 'dec',
+                           'mas', 'ine', 'md', 'he', 'oab', 'remo', 'est', 'rum', 'pena', 'nula', 'ato', 'stip', 'di',
+                           'ob', 'ofr', 'ltd', 'ter', 'be', 'dl', 'com', 'ros', 'ill', 'nae', 'cfr', 'fia', 'sum',
+                           'vdos', 'ke', 'fli', 'rtz', 'edci', 'niko', 'fti', 'ut', 'runc', 'iff', 'pift', 'esmo',
+                           'ento', 'ffs', 'dolo', 'vido', 'dihm', 'id', 'enm', 'ic', 'dada', 'vir', 'tl', 'ar', 'vel',
+                           'dez', 'gisi', 'en', 'sc', 'tora', 'dd', 'nova', 'ase', 'ttjl', 'tyk', 'ot', 'os', 'suo',
+                           'fala', 'te', 'ria', 'ie', 'tc', 'nade', 'tcu', 'ela', 'shs', 'swe', 'dita', 'siam', 'cr',
+                           'aro', 'eis', 'modo', 'cabo', 'este', 'ttir', 'rn', 'cs', 'agu', 'deve', 'oa', 'rep', 'rwa',
+                           'fora', 'oh', 'sup', 'sia', 'seja', 'vo', 'dele', 'aw', 'vd', 'ma', 'cruz', 'tj', 'bi',
+                           'abr', 'pim', 'andr', 'arr', 'pkt', 'nac', 'tare', 'pura', 'ib', 'irpj', 'suga', 'zti', 'jq',
+                           'tf', 'oest', 'ele', 'gen', 'wk', 'ectt', 'mi', 'mane', 'omin', 'vv', 'cone', 'boa', 'paga',
+                           'frk', 'melo', 'jun', 'iy', 'dal', 'isso', 'clt', 'rr', 'meta', 'das', 'sim', 'ord', 'crfb',
+                           'xiv', 'stir', 'et', 'dei', 'kl', 'oco', 'anos', 'nane', 'qd', 'cos', 'incs', 'foi', 'mg',
+                           'caa', 'ss', 'piam', 'lk', 'edil', 'ye', 'fux', 'st', 'iva', 'oe', 'vis', 'fab', 'si',
+                           'puc', 'ia', 'fato', 'lvii', 'isto', 'dom', 'pais', 'cep', 'ds', 'ails', 'an', 'itci',
+                           'jus', 'tari', 'sn', 'acre', 'ao', 'iik', 'mb', 'tu', 'ekmo', 'cimo', 'mano', 'pcat',
+                           'adin', 'isi', 'ito', 'emb', 'via', 'am', 'se', 'pm', 'ur', 'co', 'dz', 'riba', 'es', 'lei',
+                           'gab', 'as', 'iai', 'aos', 'lid', 'da', 'csll', 'cf', 'vem', 'elan', 'nide', 'arma', 'if',
+                           'toda', 'wis', 'fax', 'irl', 'cgpc', 'ktjr', 'ti', 'tr', 'up', 'vaz', 'fim', 'dito', 'loa',
+                           'ata', 'para', 'ls', 'qual', 'pago', 'al', 'pb', 'ki', 'mp', 'nto', 'dia', 'esta', 'gest',
+                           'ci', 'fig', 'pt', 'exas', 'jw', 'obn', 'pire', 'zs', 'out', 'ande', 'jk', 'vez', 'le', 'ne']
+
+        if type(texto) is list:
+            res = []
+            for i, tr in enumerate(texto):
+                UTIL.progress_bar(i,len(texto), 'analisando {}/{}'.format(i,len(texto)))
+                res = res + UTIL_TEXTOS.possiveis_abreviacoes(tr, min_len)
+                if i % 10 and len(res)>0:
+                    print(set(res))
+            return set(res)
+
+        #texto = texto.replace('.', '. ')
+        texto = re.sub('\s\s+', ' ', texto)
+        termos = set(re.split(' ', texto.lower()))
+        lista = []
+
+        def _verifica(t):
+            if 1 < len(t) <= min_len + 1 and t[-1] == '.':
+                t = t.lower()[0:-1]
+                if bool(re.match('^[a-z]+$', t)) \
+                        and t not in NAO_ABREVIACOES \
+                        and not ABREVIACOES_RGX.search(' '+t+'.'):
+                    lista.append(t.lower())
+
+        UTIL.map_thread(_verifica, termos, 10)
+        return lista
+
 
 if __name__ == "__main__":
-    # main('resumir.txt',5)
+
+    scores = UTIL_TEXTOS.sentencas('Esse texto tem 3 sentenças da Sr(a). e Dra. Maria e o Sr. João é uma. A outra com o art. 333 é a segunda. E por fim, temos fls. 5 a terceira.')
+    [print(s) for s in scores]
     print('===============================================')
+
+    print(ABREVIACOES_RGX.pattern)
+    print(ABREVIACOES_RGX.search(' dra.'))
+    print(ABREVIACOES_RGX.search(' 999.'))
+    print('===============================================')
+
