@@ -205,14 +205,14 @@ O retorno do exemplo acima será a lista de tokens do documento, de acordo com o
 ```
 
 ## Resumindo textos: resumo por extração
-Encontrei vários códigos e exemplos de como resumir um texto. Verifiquei que o mais complicado não é a técnica de resumo, mas a divisão do texto em sentenças para que estas possam ser <i>rankeadas</i> e com isso possamos selecionar as mais importantes para o documento. Em relação ao score das sentenças, o trabalho já foi feito na parte de comparação. Calculando os termos mais relevantes de cada sentença como se fossem documentos, onde o documento é o <b>corpus</b>. Como já temos duas formas de calcular o score de um documento, e agora podemos usar para calcular o score das sentenças, também temos duas formas de resumir. Uma usando o sklearn para identificar o score das sentenças, e outra usando o elasticsearch. 
+Encontrei vários códigos e exemplos de como resumir um texto. Verifiquei que o mais complicado não é a técnica de resumo, mas a divisão do texto em sentenças para que estas possam ser <i>rankeadas</i> e com isso possamos selecionar as mais importantes para o documento. Em relação ao score das sentenças, o trabalho já foi feito na parte de comparação. Calculando os termos mais relevantes de cada sentença como se fossem documentos, onde o documento acaba sendo o <b>corpus</b>. Como já temos duas formas de calcular o score de um documento, e podemos usar cada uma para calcular o score das sentenças, também temos duas formas de resumir. Uma usando o <b>sklearn</b> para identificar o score das sentenças, e outra usando o <b>elasticsearch</b>. 
 
 - quais são os diferentes tipos de resumos automáticos: https://en.wikipedia.org/wiki/Automatic_summarization
 
 ### Exemplo de como criar um resumo usando o sklearn e o elasticsearch
 
-- Calculando os scores: o código de exemplo usa a matriz csr para calcular o score de cada sentença, somando o peso dos termos para cada uma e ordenando as sentenças de forma decrescente pelos seus scores.
-- Com isso é só decidir quantas sentenças queremos retornar, e retorná-las na ordem natural do texto. No exemplo temos a opção de definir um número mínimo de sentenças e um número mínimo do percentual de scores do texto. Quando os dois mínimos forem atingidos, o resumo é concluído.
+- <b>Calculando os scores</b>: o código de exemplo usa a matriz <b>csr</b> para calcular o score de cada sentença, somando o peso dos termos para cada uma e ordenando as sentenças de forma decrescente pelos seus scores.
+- Com isso feito, é só decidir quantas sentenças queremos retornar ou quanto porcento dos scores, e retorná-las na ordem natural do texto. No exemplo temos a opção de definir um número mínimo de sentenças e um número mínimo do percentual de scores do texto. Quando os dois mínimos forem atingidos, o resumo é concluído.
 - O arquivo "resumir.txt" é uma cópia do texto sobre Platão da wikipedia, e é usado para o resumo exemplo, que é feito buscando no mínimo 1% do texto, com no mínimo 2 sentenças. https://pt.wikipedia.org/wiki/Plat%C3%A3o
 ```py
     texto = UTIL_ARQUIVOS.carregar_string_arquivo('.\\textos_corpus\\resumir.txt')
@@ -224,7 +224,7 @@ Encontrei vários códigos e exemplos de como resumir um texto. Verifiquei que o
     print(UTIL_SIMILARIDADE.resumo_textos(texto_ou_textos=texto, min_sentencas=2, min_percentual=1,
                                           objElastic=elastic, campo_elastic='Texto_Shingle'))
 ```
-- Os resultados estão abaixo. Interessante que nesse caso os dois resumos ficaram iguais. O que vai alterar os pesos de cada um é o peso dos termos colocados no elasticsearch, já que o sklearn está usando como corpus apenas o próprio documento. O valor dos scores não é importante, o elastic e o sklearn calculam de forma diferente. No algoritmo usado, foi incluído um peso extra para sentenças completamente em maiúsculo, mas isso pode ser alterado no parâmetro da chamada do método <b>resumo_textos</b>.
+- Os resultados estão abaixo. Interessante que nesse caso os dois resumos ficaram iguais. O que vai alterar os pesos de cada um é o peso dos termos dos documentos do elasticsearch junto com o analizer do campo, já que o sklearn está usando como corpus apenas o próprio documento (isso pode ser mudado também). Não é possível compara o scores entre o elastic e o sklearn, pois eles calculam de forma diferente. No algoritmo usado, foi incluído um peso extra para sentenças completamente em maiúsculo, mas isso pode ser alterado no parâmetro da chamada do método <b>resumo_textos</b>.
 ```
 == RESUMO SKLEARN
 Percentual:  1.9664313580305095 Sentenças:  2 Total scores:  1127.0736074334588
@@ -233,7 +233,7 @@ A mais famosa fonte da história do resgate de Platão por Arquitas está na Sé
 Percentual:  3.904509364856055 Sentenças:  2 Total scores:  11529.746356458076
 A mais famosa fonte da história do resgate de Platão por Arquitas está na Sétima Carta, onde Platão descreve seu envolvimento nos incidentes de seu amigo Dion de Siracusa e Dionísio I, o tirano de Siracusa, Platão esperava influenciar o tirano sobre o ideal do rei-filósofo (exposto em Górgias, anterior à sua viagem), mas logo entrou em conflito com o tirano e sua corte; mas mesmo assim cultivou grande amizade com Díon, parente do tirano, a quem pensou que este pudesse ser um discípulo capaz de se tornar um rei-filósofo.  Diógenes Laércio conta que ele "foi a Cirene, juntar-se a Teodoro, o matemático, depois à Itália, com os pitagóricos Filolau e Eurito; e daí para o Egito, avistar-se com os profetas; ele tinha decidido encontrar-se também com os magos, mas a guerras da Ásia o fizeram renunciar a isso" Apesar desse relato de Diógenes Laércio, é posto em dúvida se Platão foi mesmo ao Egito, pois há evidências de que a estadia foi inventada no Egito, para aproximar Platão à tradição de sabedoria egípcia.
 ```
-- Pode-se também listar o score das sentenças, onde cada item do array corresponde à (posição da sentença no texto, score, texto):
+- Pode-se também listar o score das sentenças, onde cada item do array corresponde a: (posição da sentença no texto, score, texto):
 ```py
     print('== SCORES SKLEARN')
     [print(s) for s in UTIL_SIMILARIDADE.scores_textos(texto_ou_textos=texto, peso_so_maiusculas=2)]
@@ -248,7 +248,7 @@ A mais famosa fonte da história do resgate de Platão por Arquitas está na Sé
 (200, 9.70703193005209, 'Acredita-se que Pletão passou uma cópia dos diálogos platônicos para Cosme de Médici em 1438/39 durante o Conselho de Ferrara, quando foi chamado para unificar as Igrejas grega e latina e então foi transferido para Florença onde fez uma palestra sobre a relação e as diferenças de Platão e Aristóteles; assim, Pletão teria influenciado Cosme com seu entusiasmo. ')
 (137, 9.41945973331433, '. . Platão foi certamente o representante máximo desse gênero literário, superior a todos os outros e, mesmo, o único representante, pois apenas em seus escritos é que se pode reconhecer a natureza autêntica do filosofar socrático, que nos outros escritores, degenerou em maneirismos; sendo assim, o diálogo, em Platão, é mais do que um gênero literário: é sua forma de fazer filosofia. ')
 ```
-- A divisão do texto em sentenças é feita pelo código abaixo, uma mistura de alguns códigos exemplos que encontrei por aí, adaptando ao português. Não é perfeito, mas está razoável. A base principal desse código veio daqui: baseado em https://stackoverflow.com/questions/25735644/python-regex-for-splitting-text-into-sentences-sentence-tokenizing
+- A divisão do texto em sentenças é feita pelo código abaixo, uma mistura de alguns códigos exemplos que encontrei por aí, adaptando ao português. Não é perfeito, mas está razoável. A base principal desse código veio daqui:  https://stackoverflow.com/questions/25735644/python-regex-for-splitting-text-into-sentences-sentence-tokenizing
 
 - O método de resumo pode receber um array de textos, daí ele entende que não precisa dividir em sentenças. Isso é interessante caso o texto já esteja dividido em sentenças, diminuindo o erro. Em geral o que dificulta a divisão do texto são as abreviações 
 ```py
