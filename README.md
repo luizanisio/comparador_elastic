@@ -83,7 +83,7 @@ PUT /comparador/_mapping/textos/
 
 ### 2. incluir no elastic diversos textos do domínio da área que se deseja avaliar os documentos. Nesse caso vou usar textos jurídicos, os mesmos textos usados para gerar o vetor de palavras do exemplo word2vec.
 - A inclusão pode ser feita via código ou kibana, vou disponibilizar um código que inclui todos os textos de uma pasta.
-´´´json
+```json
   POST comparador/textos/1
   { "Id" : 1,
     "Texto" : "1. Adeus despedida de encomendar [a-deus] 2. Alegoria representa uma coisa para dar ideia de outra 3. Amanhecer nascer do sol, presenciável em noites de trabalho ou de insónia ",
@@ -91,7 +91,7 @@ PUT /comparador/_mapping/textos/
     "Texto_Shingle_Raw" : "1. Adeus despedida de encomendar [a-deus] 2. Alegoria representa uma coisa para dar ideia de outra 3. Amanhecer nascer do sol, presenciável em noites de trabalho ou de insónia ",
     "Atualizacao" : "2018-01-01 10:22:33"
   }
-´´´
+```
 
 ### 3. fazer uma requisição ao elastic solicitando que retorne os termos importantes de um documento de acordo com o analyzer de um campo.
 - O elastic permite simular um documento sem incluí-lo, retornando os termos/tokens que seriam retornados caso o documento existisse na base. Com isso, podemos usar a base como <i>corpus</i> de documentos. Podemos retornar os termos do documento (como um tokenizador usando o analyser do campo) e podemos também retornar os termos relevantes de um conjunto de documentos, bem como os seus pesos de acordo com os documentos do <i>corpus</i> da base (já calculados o TFIDF ou BM25). 
